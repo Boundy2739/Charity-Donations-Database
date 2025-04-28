@@ -11,7 +11,6 @@ def editDonations():
         k_date = str(input("Insert the date that donation happened:  "))
         cursor.execute("""select SourceEvent from donations where SourceEvent='{}'""".format(k_eventName))
         namecheck = cursor.fetchall()
-        print("diqkmdqimd", namecheck)
         if not namecheck:
             print("There is no such donation in the database")
         if namecheck:

@@ -11,7 +11,8 @@ def editDonators():
     print("Insert 3 if you want to edit the house number of the donator\n")
     print("Insert 4 if you want to edit the phone number of the donator\n")
     print("Insert 5 if you want to edit the email of the donator\n")
-
+    print("Insert 6 if you want to edit the postcode of the donator\n")
+    print("Insert 0 if you want to go back")
     UserChoice = int(input("Choose one of details you want to edit: "))
 
     if UserChoice == 1:
@@ -47,6 +48,16 @@ def editDonators():
                    SET Email ='{}'
                    WHERE ID = '{}'
                    """.format(k_email,k_id))
+    if UserChoice == 6:
+     k_postcode = (input("Insert the new postcode: "))
+     cursor.execute( """UPDATE donators
+                   SET Postcode ='{}'
+                   WHERE ID = '{}'
+                   """.format(k_postcode,k_id))
+    if UserChoice == 0:
+      connection.close()
+      return
+    
 
     #k_address = str(input("put your adress: "))
     #k_housenumber = str(input("put your housenum: "))
