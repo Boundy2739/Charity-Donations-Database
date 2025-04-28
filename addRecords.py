@@ -125,7 +125,7 @@ def addEventsHistory():
             k_total = k_price * k_participants
 
             cursor.execute("""SELECT EventID from events WHERE EventName ='{}' """.format(k_eventName))
-
+            k_eventID = cursor.fetchall()
             cursor.execute("""insert into events_history(EventName,Date,RoomInfo,Participants,TicketPrice,TotalDonations,EventID) VALUES ('{}','{}','{}','{}','{}','{}','{}')""".format(k_eventName,k_date,k_room,k_participants,k_price,k_total,k_eventID[0][0]))
             
             connection.commit()
