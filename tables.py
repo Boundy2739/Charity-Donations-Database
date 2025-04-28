@@ -58,8 +58,9 @@ def CreateTables():
     )"""
 
     events_history_tbl= """CREATE TABLE IF NOT EXISTS events_history(
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
         EventName TEXT,
-        Date TEXT,
+        Date DATE,
         RoomInfo TEXT,
         Participants INTEGER,
         TicketPrice Real,
@@ -76,7 +77,7 @@ def CreateTables():
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         DonatorID INTEGER,
         Amount REAL,
-        Date TEXT,
+        Date DATE,
         FOREIGN KEY ("DonatorID") REFERENCES donators("ID")
         ON DELETE RESTRICT
        
@@ -88,7 +89,7 @@ def CreateTables():
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         VolunteerID INTEGER,
         Amount REAL,
-        Date TEXT,
+        Date DATE,
         FOREIGN KEY ("VolunteerID") REFERENCES volunteers("ID")
         ON DELETE RESTRICT
        
@@ -119,6 +120,8 @@ def CreateTables():
     cursor.execute("""INSERT into events("EventName") VALUES ("Marathon")""")
     cursor.execute("""INSERT into events("EventName") VALUES ("Bingo")""")
     cursor.execute("""INSERT into events("EventName") VALUES ("Auction")""")
+    cursor.execute("""INSERT into events("EventName") VALUES ("Winter Festival")""")
+    cursor.execute("""INSERT into events("EventName") VALUES ("Sports tournament")""")
 
    
    
@@ -138,7 +141,7 @@ def CreateTables():
 
     donorDetails = []
     donorID = [131930,2247893,3218941,13981,2901,2488,2605,]
-    donorName = ["HB","John Doe,","Frank Calderwood","Kyra Conkel","Alysha Laguardia","Otto Bednar","Wesley Gangwer"]
+    donorName = ["HB","John Doe","Frank Calderwood","Kyra Conkel","Alysha Laguardia","Otto Bednar","Wesley Gangwer"]
     donorAddress = ["Light Street","Bankhall Ave","Wood Glade street","Ash Street","Deercliff Circle","Broick Road","Walport Road"]
     donorHouseNum = [7,17,72,90,23,21,11]
     donorPostcode = ["M40 9JU","23R 46D","V46 UI3","M40 AS8","4M9 MJU","M40 9JU","DMI 903",]
@@ -152,18 +155,18 @@ def CreateTables():
     cursor.executemany(sql,donorDetails)
 
 
-    eventName = ["Egg hunt","Marathon","Bake off","Bike ride","Bingo","Auction","Bike ride","Bake off","Bake off","Bingo","Egg hunt"]
-    eventDate = ["1/1/2025","1/1/2025","1/1/2025","1/1/2025","1/1/2025","1/1/2025","1/1/2025","1/1/2025","1/1/2025","1/1/2025","1/1/2025"]
-    eventRoom=["?","?","?","?","?","?","?","?","?","?","?"]
-    eventParticipants= np.array([25,42,14,26,18,20,23,10,12,20,30])
-    eventCost = np.array([5.99,9.99,12.99,4.99,2.99,7.99,4.99,12.99,12.99,2.99,5.99])
+    eventName = ["Egg hunt","Marathon","Bake off","Sports tournament","Bike ride","Bingo","Auction","Bike ride","Winter Festival","Bake off","Bake off","Bingo","Egg hunt"]
+    eventDate = ["2025-01-01","2025-01-01","2025-01-01","2025-01-01","2025-01-01","2025-01-01","2024-10-8","2024-12-19","2025-02-17","2025-01-01","2025-01-01","2025-01-01","2025-01-01"]
+    eventRoom=["?","?","?","?","?","?","?","?","?","?","?","?","?"]
+    eventParticipants= np.array([25,42,14,36,26,18,20,50,23,10,12,20,30])
+    eventCost = np.array([5.99,9.99,12.99,4.99,2.99,4.99,7.99,4.99,4.99,12.99,12.99,2.99,5.99])
     eventTotalDonations = np.multiply(eventParticipants,eventCost)
     print(eventTotalDonations)
-    eventID = [1,4,2,3,5,6,3,2,2,5,1]
+    eventID = [1,4,2,8,3,5,6,3,7,2,2,5,1,1]
 
     eventDetails = []
     
-    for i in range (11):
+    for i in range (13):
         vals = [eventName[i],eventDate[i],eventRoom[i],int(eventParticipants[i]),float(eventCost[i]),round(float(eventTotalDonations[i]), 2),eventID[i]]
         eventDetails.append(vals)
 
@@ -178,8 +181,8 @@ def CreateTables():
     DonationsDetails = []
     DonorID=[2488,2605,2901,13981,2247893,3218941,2901,2605]
     Amount = [15.45,100.00,63.00,9.50,30.00,20.00,5.90,15.00]
-    Date = ["27/03/2025","27/03/2025","27/03/2025","27/03/2025","27/03/2025","27/03/2025"
-            ,"27/03/2025","27/03/2025"]
+    Date = ["2025-03-27","2025-03-27","2025-03-27","2025-03-27","2025-03-27","2025-03-27"
+            ,"2025-03-27","2025-03-27"]
 
     for i in range (8):
         
@@ -194,8 +197,8 @@ def CreateTables():
     VolunteerDonationsDetails = []
     VolunteerID = [1400909,913,474920,913,913,6729012,6729012]
     Amount = [17.45,10.00,73.10,8.50,30.00,30.00,9.99,27.17]
-    Date = ["27/03/2025","27/03/2025","27/03/2025","27/03/2025","27/03/2025","27/03/2025"
-            ,"27/03/2025","27/03/2025"]
+    Date = ["2025-03-27","2025-03-27","2025-03-27","2025-03-27","2025-03-27","2025-03-27"
+            ,"2025-03-27","2025-03-27"]
     
     for i in range (6):
         

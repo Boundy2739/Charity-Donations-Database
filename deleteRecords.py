@@ -1,33 +1,39 @@
 import sqlite3 as db
 from tabulate import tabulate
+from datetime import datetime
+
+
+#this function deletes a donor from the table
 def DeleteDonators():
     connection = db.connect("Charity.db")
     cursor = connection.cursor()
-    deletingRecords = 1
-    while deletingRecords == 1:
-        cursor.execute("PRAGMA foreign_keys=1")
-        ID = int(input("Insert the ID of the donor you want to delete: "))
-        cursor.execute("""SELECT * from donators WHERE ID = '{}'""".format(ID))
-        IDCheck = cursor.fetchall()
+    while True:
         try:
-            print(tabulate(IDCheck))
-            if ID == IDCheck[0][0]:
-                confirmation = input("Is this the donor you want to delete? y/n: ")
-                if confirmation == "y":
-                    try:
-                        cursor.execute ( """delete from donators 
-                    where ID = '{}' """.format(ID))
-                    except db.IntegrityError:
-                        print("You cant delete this donator until you have removed all the donations made by them from the database")
-        except IndexError:
-            print("This ID does not exist in the database, make sure to write it correctly")
-        connection.commit()
-        confirmation = input("DO you want to remove another donor? y/n" )
-        if confirmation.lower() == "n":
-            connection.close()
-            deletingRecords = 0
-        else:
-            print("ok")
+            cursor.execute("PRAGMA foreign_keys=1")
+            ID = int(input("Insert the ID of the donor you want to delete: "))
+            cursor.execute("""SELECT * from donators WHERE ID = '{}'""".format(ID))
+            IDCheck = cursor.fetchall()   #stores results of SELECT statement
+            try:
+                print(tabulate(IDCheck))#prints the results so the user can check if they are deleting the right person
+                if ID == IDCheck[0][0]: #this statement checks if the ID inserted by the user is present in the donators table
+                    confirmation = input("Is this the donor you want to delete? y/n: ")
+                    if confirmation == "y":
+                        try:
+                            cursor.execute ( """delete from donators 
+                        where ID = '{}' """.format(ID))
+                        except db.IntegrityError:
+                            print("You cant delete this donator until you have removed all the donations made by them from the database")
+            except IndexError:
+                print("This ID does not exist in the database, make sure to write it correctly")
+            connection.commit()
+            confirmation = input("DO you want to remove another donor? y/n" )
+            if confirmation.lower() == "n":
+                connection.close()
+                break
+            else:
+                print("ok")
+        except ValueError:
+            print("Use only numbers!")
 
         
 
@@ -36,142 +42,193 @@ def DeleteDonators():
 def deleteDonorDonation():
     connection = db.connect("Charity.db")
     cursor = connection.cursor()
-    deletingRecords = 1
-    while deletingRecords == 1:
-        cursor.execute("PRAGMA foreign_keys=1")
-        k_ID = int(input("Insert the ID of the donator whose donation you want to remove: "))
-        k_Date = input("Insert the date of the donation")
-        k_Amount = float(input("Insert the amount that was donated: "))
-        k_role = input("Is the donator a volunteer? y/n")
-        if k_role.lower() == "y":
-            cursor.execute("""SELECT VolunteerID,Amount,Date from volunteers_donations 
-                        WHERE VolunteerID = '{}'
-                        AND Date = '{}'
-                        AND Amount = '{}'""".format(k_ID,k_Date,k_Amount))
-            checkDetails = cursor.fetchall()
-            try:
-                headers = ["VolunteerID","Amount","Date"]
-                if checkDetails[0][0] == k_ID and checkDetails[0][2] == k_Date and checkDetails[0][1] == k_Amount:
-                    print(tabulate(checkDetails,headers=headers))
-                    confirmation = input("Is this the donation you want to delete? y/n: ")
-                    if confirmation == 'y':
-                        cursor.execute("""DELETE from volunteers_donations WHERE VolunteerID ='{}' and Date = '{}'""".format(k_ID,k_Date))
-            except:
-                print("Cannot find a donation with the details give, check that the ID and the date are correct")
-        else:
-            cursor.execute("""SELECT DonatorID,Amount,Date from donor_donations 
-                        WHERE DonatorID = '{}'
-                        AND Date = '{}'
-                        AND Amount = '{}'""".format(k_ID,k_Date,k_Amount))
-            checkDetails = cursor.fetchall()
+    while True:
+        try:
+            cursor.execute("PRAGMA foreign_keys=1")
+            k_ID = int(input("Insert the ID of the donator whose donation you want to remove: "))
+            while True: #this loop forces the user to respect the yyyy-mm-dd format
+                k_Date = input("Insert the date when the donation happened (yyyy-mm-dd): ")
+                try:
+                    datetime.strptime(k_Date, "%Y-%m-%d")
+                    break 
+                except ValueError:
+                    print("Invalid date format. Please use yyyy-mm-dd.")
+            k_Amount = float(input("Insert the amount that was donated: "))
             
-            try:
-                headers = ["DonatorID","Amount","Date"]
-                if checkDetails[0][0] == k_ID and checkDetails[0][1] == k_Amount and checkDetails[0][2] == k_Date:
-                    print(tabulate(checkDetails,headers=headers))
+            #This unites the donor and volunteers donation tables into one table with a new Role column, 
+            #and checks if the ID of the user is present
+            cursor.execute("""select DonatorID, Date,Amount, 'Donor' as Role from donor_donations where DonatorID='{}'
+                                AND Date ='{}'
+                                AND Amount = '{}'
+                                UNION
+                                select VolunteerID, Date,Amount, 'Volunteer' as Role from volunteers_donations where VolunteerID ='{}'
+                                AND Date ='{}'
+                                AND Amount = '{}'""".format(k_ID,k_Date,k_Amount,k_ID,k_Date,k_Amount))
+                
+            # Fetch the query result and store it in CheckDetails    
+            CheckDetails = cursor.fetchall()
+
+            # Check if any matching donation was found           
+            if CheckDetails:
+                if CheckDetails[0][3] == 'Donor':  # If found, check if the donation came from a 'Donor'
+                    headers = ["ID","Amount","Date","Role"]
+                    print(tabulate(CheckDetails, headers = headers, tablefmt="grid"))
                     confirmation = input("Is this the donation you want to delete? y/n: ")
                     if confirmation.lower() == ("y"):
-                        cursor.execute("""DELETE from donor_donations WHERE DonatorID ='{}' and Date = '{}'""".format(k_ID,k_Date))
-            except:
-                print("Cannot find a donation with the details give, check that the ID and the date are correct")
+                                        
+                        cursor.execute("""DELETE from donor_donations 
+                                        WHERE DonatorID ='{}'
+                                        AND Date = '{}'
+                                        AND Amount ='{}'""".format(k_ID,k_Date,k_Amount))
 
-        connection.commit()
+                    
+                                    
+                if CheckDetails[0][3] == 'Volunteer':  # If found, check if the donation came from a 'Volunteer'
+                    headers = ["ID","Amount","Date","Role"]
+                    print(tabulate(CheckDetails, headers = headers, tablefmt="grid"))
+                    confirmation = input("Is this the donation you want to delete? y/n: ")
+                    if confirmation.lower() == ("y"):
+                        
+                        cursor.execute("""DELETE from volunteers_donations 
+                                        WHERE VolunteerID ='{}'
+                                        AND Date = '{}'
+                                        AND Amount ='{}'""".format(k_ID,k_Date,k_Amount))
         
-        confirmation = input("Do you want to remove more donations? y/n: ")
-        if confirmation.lower() == "n":
-            connection.close()
-            deletingRecords =0
-        else:
-            print("ok")
+
+
+                                    
+            if not CheckDetails:
+                print("There is no donations in database with the details you have given!")
+
+            connection.commit()
+            
+            confirmation = input("Do you want to remove more donations? y/n: ")
+            if confirmation.lower() == "n":
+                connection.close()
+                break
+            else:
+                print("ok")
+        except ValueError:
+            print("Please dont use letters!")                
             
 
 
 def deleteVolunteers():
     connection = db.connect("Charity.db")
     cursor = connection.cursor()
-    deletingRecords = 1
-    while deletingRecords == 1:
-        cursor.execute("PRAGMA foreign_keys=1")
-        k_id = int(input("Insert the ID of volunteer you want to remove from the database: "))
-        cursor.execute("""SELECT * from volunteers WHERE ID ='{}'""".format(k_id))
-        IDcheck = cursor.fetchall()
+    while True:
         try:
-            if k_id == IDcheck[0][0]:
-                headers = ["ID","Name","Address","House number","Postcode","Phone number","Email"]
-                print(tabulate(IDcheck, headers=headers,tablefmt="grid"))
-                confirmation = input("Is this the volunteer you want to delete? y/n: ")
-                if confirmation == "y":
-                    try:
-                        cursor.execute ( """delete from volunteers
-                    where ID = '{}' """.format(k_id))
-                    except db.IntegrityError:
-                        print("You cant delete this volunteer until you have removed all the donations made by them from the database")
-        except IndexError:
-            print("This ID does not exists in the database, make sure to spell correctly")
-        connection.commit()
-        confirmation =  input("Do you want to remove another volunteer? y/n: ")
-        if confirmation.lower() == "n":
-            connection.close()
-            deletingRecords = 0
-        else:
-            print("ok")
+            cursor.execute("PRAGMA foreign_keys=1")
+            k_id = int(input("Insert the ID of volunteer you want to remove from the database: "))
+            cursor.execute("""SELECT * from volunteers WHERE ID ='{}'""".format(k_id))
+            
+            #Fetch the results and store them
+            IDcheck = cursor.fetchall()
+            try:
+                if k_id == IDcheck[0][0]: #Checks if the results are the same as inputs the user has given
+                    headers = ["ID","Name","Address","House number","Postcode","Phone number","Email"]
+                    
+                    #Shows the record the user is going to delete if they accept the confirmation
+                    print(tabulate(IDcheck, headers=headers,tablefmt="grid"))
+                    confirmation = input("Is this the volunteer you want to delete? y/n: ")
+                    if confirmation == "y":
+                        try:
+                            cursor.execute ( """delete from volunteers
+                        where ID = '{}' """.format(k_id))
+                        except db.IntegrityError:
+                            print("You cant delete this volunteer until you have removed all the donations made by them from the database")
+            except IndexError:
+                print("This ID does not exists in the database, make sure to spell correctly")
+            connection.commit()
+            confirmation =  input("Do you want to remove another volunteer? y/n: ")
+            if confirmation.lower() == "n":
+                connection.close()
+                break
+            else:
+                print("ok")
+        except ValueError:
+            print("Dont use letters when inserting the ID")
 
 
 
 def deleteEventHistory():
     connection = db.connect("Charity.db")
     cursor = connection.cursor()
-    deletingRecords =1
-    while deletingRecords == 1:
-        cursor.execute("PRAGMA foreign_keys=1")
-        eventName = input("Insert the name of the event you want to delete: ")
-        eventDate = input("Insert the date of the event you want to delete: ")
-        eventRoom = input("Which room did the event took place: ")
-        eventParticipants = int(input("How many people did partake: "))
-        eventTicketPrice = float(input("Insert the price of the ticket: "))
-        cursor.execute("""SELECT EventName,Date,RoomInfo,Participants,TicketPrice,TotalDonations from events_history WHERE EventName = '{}'
-            AND Date = '{}'
-            AND RoomInfo = '{}'
-            AND Participants = '{}'
-            AND TicketPrice = '{}'""".format(eventName,eventDate,eventRoom,eventParticipants,eventTicketPrice))
-        eventDetails = cursor.fetchall()
+    while True:
         try:
-            headers = ("Event name","Date","Room info","Participants","Ticket price","Total donations")
-            if eventDetails [0][0] == eventName and eventDate == eventDetails[0][1] and eventDetails [0][2] == eventRoom and eventParticipants == eventDetails[0][3] and eventDetails[0][4] == eventTicketPrice:
+            cursor.execute("PRAGMA foreign_keys=1")
+            eventName = input("Insert the name of the event you want to delete: ")
+            while True: #this forces the user to stick to the format yyyy-mm-dd
+                eventDate = input("Insert the date when the donation happened (yyyy-mm-dd): ")
+                try:
+                    datetime.strptime(eventDate, "%Y-%m-%d")
+                    break 
+                except ValueError:
+                    print("Invalid date format. Please use yyyy-mm-dd.")
+            eventRoom = input("Which room did the event took place: ")
+            eventParticipants = int(input("How many people did partake: "))
+            eventTicketPrice = float(input("Insert the price of the ticket: "))
+            
+            #selects the rows that match the user input
+            cursor.execute("""SELECT EventName,Date,RoomInfo,Participants,TicketPrice,TotalDonations from events_history WHERE EventName = '{}'
+                AND Date = '{}'
+                AND RoomInfo = '{}'
+                AND Participants = '{}'
+                AND TicketPrice = '{}'""".format(eventName,eventDate,eventRoom,eventParticipants,eventTicketPrice))
+            #fetch the results and store them
+            eventDetails = cursor.fetchall()
+            try:
+                headers = ("Event name","Date","Room info","Participants","Ticket price","Total donations")
+                #stores the user inputs in an array that will be used to compare the results of the select statement
+                fields_to_check = [eventName, eventDate, eventRoom, eventParticipants, eventTicketPrice]
+                
+                # checks if all the results in eventDetails match the values in field_to_check all at once
+                if all(eventDetails [0][i] == fields_to_check[i] for i in range (5)):
 
-                print(tabulate(eventDetails,headers=headers))
-                confirmation = input("Is this the record you want to delete? y/n:")
-                if confirmation.lower() == "y":
-                    cursor.execute ( """delete from events_history
-                        where EventName  = '{}' 
-                        and Date = '{}'
-                        and RoomInfo ='{}'
-                        and Participants ='{}'
-                        and TicketPrice = '{}' """.format(eventName,eventDate,eventRoom,eventParticipants,eventTicketPrice))
-        except IndexError:
-            print("Cant find any event instance with the details given, make sure write correctly the details")
+                    #prints the record that is going to be deleted and asks for a confirmation from the user before proceeding
+                    print(tabulate(eventDetails,headers=headers))
+                    confirmation = input("Is this the record you want to delete? y/n:")
+                    if confirmation.lower() == "y":
+                        cursor.execute ( """delete from events_history
+                            where EventName  = '{}' 
+                            and Date = '{}'
+                            and RoomInfo ='{}'
+                            and Participants ='{}'
+                            and TicketPrice = '{}' """.format(eventName,eventDate,eventRoom,eventParticipants,eventTicketPrice))
+                    else:
+                        print("Cant find any event instance with the details given, make sure write correctly the details")
+
+            except IndexError:
+                print("Cant find any event instance with the details given, make sure write correctly the details")
 
 
-        
-        connection.commit()
-        confirmation =  input("Do you want to remove another volunteer? y/n: ")
-        if confirmation.lower() == "n":
-            connection.close()
-            deletingRecords = 0
-        else:
-            print("ok")
+            
+            connection.commit()
+            confirmation =  input("Do you want to remove another volunteer? y/n: ")
+            if confirmation.lower() == "n":
+                connection.close()
+                break
+            else:
+                print("ok")
+        except ValueError:
+            print("Dont insert letters")
+
+#this removes an event from the event list table
 def deleteEvent():
     connection = db.connect("Charity.db")
     cursor = connection.cursor()
-    deletingRecords = 1
-    while deletingRecords == 1:
+    while True:
         cursor.execute("PRAGMA foreign_keys=1")
         k_eventName = input("Insert the name of the event you want to delete: ")
-        cursor.execute("""DELETE from events WHERE EventName = '{}'""".format(k_eventName))
-        connection.commit()
-        confirmation =  input("Do you want to remove another volunteer? y/n: ")
-        if confirmation.lower() == "n":
-                connection.close()
-                deletingRecords = 0
-        else:
-                print("ok")
+        try: #Tries to delete the event from the database
+            cursor.execute("""DELETE from events WHERE EventName = '{}'""".format(k_eventName))
+            connection.commit()
+            confirmation =  input("Do you want to remove another event? y/n: ")
+            if confirmation.lower() == "n":
+                    connection.close()
+                    break
+            else:
+                    print("ok")
+        except db.IntegrityError: #this exception run if the event has an instance in the event history table
+            ("You cannot remove this event, you need to remove all the instances of this event from the events history table")
+            break

@@ -6,47 +6,54 @@ from subMenus import *
 
 def Menu():
 
-    MenuOptions = 1
-    while MenuOptions == 1:
+    while True:
 
         print("Insert 1 if you want to add a new record")
         print("Insert 2 if you want to edit an existing record")
         print("Insert 3 if you want to delete a record")
-        print("Insert 4 if you want to view or search record\n")
-        UserInput = int(input("Choose an option: "))
+        print("Insert 4 if you want to view or search record")
+        print("Insert 5 to create the tables if you dont have them")
+        print("Insert 0 to close the program")
 
 
 
         
-        
-        if UserInput == 1:
+        try:
+            UserInput = int(input("Choose an option: "))
+            if UserInput == 1:
 
-            print("hello")
-            addOptions()
-        
-        if UserInput == 2:
+                print("hello")
+                addOptions()
+            
+            if UserInput == 2:
 
-            print("hello")
-            editOptions()
-        
-        if UserInput == 3:
+                print("hello")
+                editOptions()
+            
+            if UserInput == 3:
 
-            print("hello")
-            deleteOptions()
-        
-        if UserInput == 4:
+                print("hello")
+                deleteOptions()
+            
+            if UserInput == 4:
 
-            print("hello")
-            viewOptions()
-        
-        
-        if UserInput == 0:
-            print("Bye")
-            MenuOptions = 0
-        
-        
-        if UserInput == 5:
-            CreateTables()
+                print("hello")
+                viewOptions()
+            
+            
+            if UserInput == 0:
+                print("Bye")
+                break
+                
+            
+            
+            if UserInput == 5:
+                CreateTables()
+            if UserInput > 5 or UserInput < 0:
+                ("The input is invalid, please choose one of the options listed!\n")
+        except ValueError:
+            print("This input is invalid, please use only numeric values!\n")
+            
 
         
         
