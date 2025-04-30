@@ -59,15 +59,15 @@ def CreateTables():
 
     events_history_tbl= """CREATE TABLE IF NOT EXISTS events_history(
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
-        EventName TEXT,
+        EventID INTEGER,
         Date DATE,
         RoomInfo TEXT,
         Participants INTEGER,
         TicketPrice Real,
         TotalDonations Real,
-        EventID INTEGER,
         FOREIGN KEY (EventID) REFERENCES events(EventID)
         ON DELETE RESTRICT
+       
         
 
 
@@ -155,24 +155,24 @@ def CreateTables():
     cursor.executemany(sql,donorDetails)
 
 
-    eventName = ["Egg hunt","Marathon","Bake off","Sports tournament","Bike ride","Bingo","Auction","Bike ride","Winter Festival","Bake off","Bake off","Bingo","Egg hunt"]
+    eventID = [1,4,2,8,3,5,6,3,7,2,2,5,1,1]
     eventDate = ["2025-01-01","2025-01-01","2025-01-01","2025-01-01","2025-01-01","2025-01-01","2024-10-8","2024-12-19","2025-02-17","2025-01-01","2025-01-01","2025-01-01","2025-01-01"]
     eventRoom=["?","?","?","?","?","?","?","?","?","?","?","?","?"]
     eventParticipants= np.array([25,42,14,36,26,18,20,50,23,10,12,20,30])
     eventCost = np.array([5.99,9.99,12.99,4.99,2.99,4.99,7.99,4.99,4.99,12.99,12.99,2.99,5.99])
     eventTotalDonations = np.multiply(eventParticipants,eventCost)
     print(eventTotalDonations)
-    eventID = [1,4,2,8,3,5,6,3,7,2,2,5,1,1]
+    
 
     eventDetails = []
     
     for i in range (13):
-        vals = [eventName[i],eventDate[i],eventRoom[i],int(eventParticipants[i]),float(eventCost[i]),round(float(eventTotalDonations[i]), 2),eventID[i]]
+        vals = [eventID[i],eventDate[i],eventRoom[i],int(eventParticipants[i]),float(eventCost[i]),round(float(eventTotalDonations[i]), 2)]
         eventDetails.append(vals)
 
     
     
-    sql = """insert into events_history(EventName,Date,RoomInfo,Participants,TicketPrice,TotalDonations,EventID) VALUES(?,?,?,?,?,?,?)"""
+    sql = """insert into events_history(EventID,Date,RoomInfo,Participants,TicketPrice,TotalDonations) VALUES(?,?,?,?,?,?)"""
 
     cursor.executemany(sql,eventDetails)
    

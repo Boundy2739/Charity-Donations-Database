@@ -1,5 +1,6 @@
 from tables import *
 from subMenus import *
+import time
 
 
 
@@ -22,22 +23,21 @@ def Menu():
             UserInput = int(input("Choose an option: "))
             if UserInput == 1:
 
-                print("hello")
+                
                 addOptions()
             
             if UserInput == 2:
 
-                print("hello")
+                
                 editOptions()
             
             if UserInput == 3:
 
-                print("hello")
+                
                 deleteOptions()
             
             if UserInput == 4:
 
-                print("hello")
                 viewOptions()
             
             
@@ -50,9 +50,11 @@ def Menu():
             if UserInput == 5:
                 CreateTables()
             if UserInput > 5 or UserInput < 0:
-                ("The input is invalid, please choose one of the options listed!\n")
+                print("The input is invalid, please choose one of the options listed!\n")
+                time.sleep(1.5)
         except ValueError:
             print("This input is invalid, please use only numeric values!\n")
+            time.sleep(1.5)
             
 
         

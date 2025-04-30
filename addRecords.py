@@ -13,7 +13,7 @@ def addDonators():
             #after fetching and storing the result in IDcheck, this will check if the ID inserted is already in the donor table
             if IDcheck: 
                 print("This ID is already in the database, insert an unique ID")
-            #if the ID is unique the user will be prmpted to add more personal details
+            #if the ID is unique the user will be asked to add the other personal details
             else:
                 k_name = input("put your name: ")
                 k_address = input("put the name of the street where they live: ")
@@ -51,7 +51,7 @@ def addVolunteers():
     while True:
         try:
             k_ID = int(input("Insert the ID: "))
-            cursor.execute("""SELECT ID from donators WHERE ID ='{}'""".format(k_ID))
+            cursor.execute("""SELECT ID from volunteers WHERE ID ='{}'""".format(k_ID))
             IDcheck = cursor.fetchall()
             #after fetching and storing the result in IDcheck, this will check if the ID inserted is already in volunteer table
             if IDcheck: 
@@ -100,7 +100,7 @@ def addDonations():
             while True:#forces the user to use the yyyy-mm-dd format
                 k_date = input("Insert the date (yyyy-mm-dd): ")
                 try:
-                    datetime.strptime(k_date, "%Y-%m-%d")
+                    formatted_date = datetime.strptime(k_date, "%Y-%m-%d").strftime("%Y-%m-%d")
                     break 
                 except ValueError:
                     print("Invalid date format. Please use yyyy-mm-dd.")
@@ -114,7 +114,7 @@ def addDonations():
                 try:
                     if checkIDs[0][0]== k_id: #this runs if the ID given is present in the volunteers table
                         cursor.execute("""insert into volunteers_donations (VolunteerID,Amount,Date) 
-                                       VALUES ('{}','{}','{}')""".format(k_id,k_amount,k_date))
+                                       VALUES ('{}','{}','{}')""".format(k_id,k_amount,formatted_date))
                     else:
                         print("The ID you have given does not exist, you have to add the ID in the volunteers table along with the person's details")
                 except IndexError:
@@ -126,7 +126,7 @@ def addDonations():
                 try:
                     if checkIDs[0][0]== k_id: #this runs if the ID given is present in the donors table
                         cursor.execute("""insert into donor_donations (DonatorID,Amount,Date) 
-                                       VALUES ('{}','{}','{}')""".format(k_id,k_amount,k_date))
+                                       VALUES ('{}','{}','{}')""".format(k_id,k_amount,formatted_date))
                 except IndexError:
                     print("The ID you inserted does not exist in the database\n")
                     print("You need to add the donor's ID into the donators table before linking a donation to it")
@@ -171,7 +171,7 @@ def addEventsHistory():
             while True:#forces the user to use the yyyy-mm-dd format
                 k_date = input("Insert the date when the event took place (yyyy-mm-dd): ")
                 try:
-                    datetime.strptime(k_date, "%Y-%m-%d")
+                    formatted_date = datetime.strptime(k_date, "%Y-%m-%d").strftime("%Y-%m-%d")
                     break 
                 except ValueError:
                     print("Invalid date format. Please use yyyy-mm-dd.")
@@ -180,20 +180,22 @@ def addEventsHistory():
             k_price = float(input("Insert the price of the ticket: "))
             k_total = k_price * k_participants
             
-            cursor.execute("""SELECT EventID from events WHERE EventName ='{}' """.format(k_eventName))
-            k_eventID = cursor.fetchall()
-            cursor.execute("""insert into events_history(EventName,Date,RoomInfo,Participants,TicketPrice,TotalDonations,EventID) VALUES ('{}','{}','{}','{}','{}','{}','{}')""".format(k_eventName,k_date,k_room,k_participants,k_price,k_total,k_eventID[0][0]))
-            
-            connection.commit()
-            confirmation = input("Do you want to add another record? y/n: ")
-            if confirmation.lower() == "n":
-                connection.close()
-                break
-            else:
-                print("ok")
-        except:
+            try:
+                cursor.execute("""SELECT EventID from events WHERE EventName ='{}' """.format(k_eventName))
+                k_eventID = cursor.fetchall()[0][0]
+                cursor.execute("""insert into events_history (EventID,Date,RoomInfo,Participants,TicketPrice,TotalDonations) VALUES ('{}','{}','{}','{}','{}','{}')""".format(k_eventID,formatted_date,k_room,k_participants,k_price,k_total))
+                
+                connection.commit()
+                confirmation = input("Do you want to add another record? y/n: ")
+                if confirmation.lower() == "n":
+                    connection.close()
+                    break
+                else:
+                    print("ok")
+            except IndexError:
+                print("The event does not exists in the event list")
+        except ValueError:
             print("Dont insert letters!")
     
-
 
 

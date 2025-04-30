@@ -8,7 +8,6 @@ from viewRecords import *
 def addOptions():
     
     while True:
-        print("adding")
         print("Which record do you want to add?\n")
         print("Insert 1 to add a new donor")
         print("Insert 2 to add a new volunteer")
@@ -133,6 +132,7 @@ def viewOptions():
         print("Insert 2 to view a volunteer's table")
         print("Insert 3 to see the events history")
         print("Insert 4 to view a donation coming from a donor or a volunteer")
+        print("Insert 5 to search a record")
         print("Insert 0 to go back\n")
 
         try:
@@ -153,7 +153,10 @@ def viewOptions():
             if UserInput == 4:
                 viewDonations()
             
-            if UserInput > 4 or UserInput < 0:
+            if UserInput == 5:
+                searchOptions()
+            
+            if UserInput > 5 or UserInput < 0:
                     print("Invalid input, please choose one of the options listed")
         
         except ValueError:

@@ -39,21 +39,24 @@ def DeleteDonators():
 
 
 
-def deleteDonorDonation():
+def deleteDonorDonation(k_ID = None, k_Amount = None, formatted_date = None):
     connection = db.connect("Charity.db")
     cursor = connection.cursor()
     while True:
         try:
             cursor.execute("PRAGMA foreign_keys=1")
-            k_ID = int(input("Insert the ID of the donator whose donation you want to remove: "))
-            while True: #this loop forces the user to respect the yyyy-mm-dd format
-                k_Date = input("Insert the date when the donation happened (yyyy-mm-dd): ")
-                try:
-                    datetime.strptime(k_Date, "%Y-%m-%d")
-                    break 
-                except ValueError:
-                    print("Invalid date format. Please use yyyy-mm-dd.")
-            k_Amount = float(input("Insert the amount that was donated: "))
+            if k_ID == None:
+                k_ID = int(input("Insert the ID of the donator whose donation you want to remove: "))
+            if formatted_date == None:
+                while True: #this loop forces the user to respect the yyyy-mm-dd format
+                    k_Date = input("Insert the date when the donation happened (yyyy-mm-dd): ")
+                    try:
+                        formatted_date = datetime.strptime(k_Date, "%Y-%m-%d").strftime("%Y-%m-%d")
+                        break 
+                    except ValueError:
+                        print("Invalid date format. Please use yyyy-mm-dd.")
+            if k_Amount == None:
+                k_Amount = float(input("Insert the amount that was donated: "))
             
             #This unites the donor and volunteers donation tables into one table with a new Role column, 
             #and checks if the ID of the user is present
@@ -63,7 +66,7 @@ def deleteDonorDonation():
                                 UNION
                                 select VolunteerID, Date,Amount, 'Volunteer' as Role from volunteers_donations where VolunteerID ='{}'
                                 AND Date ='{}'
-                                AND Amount = '{}'""".format(k_ID,k_Date,k_Amount,k_ID,k_Date,k_Amount))
+                                AND Amount = '{}'""".format(k_ID,formatted_date,k_Amount,k_ID,formatted_date,k_Amount))
                 
             # Fetch the query result and store it in CheckDetails    
             CheckDetails = cursor.fetchall()
@@ -79,7 +82,7 @@ def deleteDonorDonation():
                         cursor.execute("""DELETE from donor_donations 
                                         WHERE DonatorID ='{}'
                                         AND Date = '{}'
-                                        AND Amount ='{}'""".format(k_ID,k_Date,k_Amount))
+                                        AND Amount ='{}'""".format(k_ID,formatted_date,k_Amount))
 
                     
                                     
@@ -92,7 +95,7 @@ def deleteDonorDonation():
                         cursor.execute("""DELETE from volunteers_donations 
                                         WHERE VolunteerID ='{}'
                                         AND Date = '{}'
-                                        AND Amount ='{}'""".format(k_ID,k_Date,k_Amount))
+                                        AND Amount ='{}'""".format(k_ID,formatted_date,k_Amount))
         
 
 
@@ -108,6 +111,9 @@ def deleteDonorDonation():
                 break
             else:
                 print("ok")
+                k_ID = None
+                k_Amount = None
+                formatted_date = None
         except ValueError:
             print("Please dont use letters!")                
             
@@ -151,52 +157,74 @@ def deleteVolunteers():
 
 
 
-def deleteEventHistory():
+def deleteEventHistory(eventID = None,formatted_date = None, eventRoom = None,eventParticipants = None, eventTicketPrice = None):
     connection = db.connect("Charity.db")
     cursor = connection.cursor()
     while True:
         try:
             cursor.execute("PRAGMA foreign_keys=1")
-            eventName = input("Insert the name of the event you want to delete: ")
-            while True: #this forces the user to stick to the format yyyy-mm-dd
-                eventDate = input("Insert the date when the donation happened (yyyy-mm-dd): ")
-                try:
-                    datetime.strptime(eventDate, "%Y-%m-%d")
-                    break 
-                except ValueError:
-                    print("Invalid date format. Please use yyyy-mm-dd.")
-            eventRoom = input("Which room did the event took place: ")
-            eventParticipants = int(input("How many people did partake: "))
-            eventTicketPrice = float(input("Insert the price of the ticket: "))
-            
+            if eventID == None:
+                eventName = input("Insert the name of the event you want to delete: ")
+            if formatted_date == None:
+                while True: #this forces the user to stick to the format yyyy-mm-dd
+                    eventDate = input("Insert the date when the donation happened (yyyy-mm-dd): ")
+                    try:
+                        formatted_date = datetime.strptime(eventDate, "%Y-%m-%d").strftime("%Y-%m-%d")
+                        break 
+                    except ValueError:
+                        print("Invalid date format. Please use yyyy-mm-dd.")
+            if eventRoom == None:
+                eventRoom = input("Which room did the event took place: ")
+            if eventParticipants == None:
+                eventParticipants = int(input("How many people did partake: "))
+            if eventTicketPrice == None:
+                eventTicketPrice = float(input("Insert the price of the ticket: "))
+            if eventID == None:
+                cursor.execute("""SELECT EventID from events WHERE EventName = '{}'""".format(eventName))
+                eventID = cursor.fetchall()[0][0]
             #selects the rows that match the user input
-            cursor.execute("""SELECT EventName,Date,RoomInfo,Participants,TicketPrice,TotalDonations from events_history WHERE EventName = '{}'
-                AND Date = '{}'
-                AND RoomInfo = '{}'
-                AND Participants = '{}'
-                AND TicketPrice = '{}'""".format(eventName,eventDate,eventRoom,eventParticipants,eventTicketPrice))
+            cursor.execute("""SELECT events.EventName,Date,RoomInfo,Participants,TicketPrice,TotalDonations from events_history
+                              JOIN events ON events_history.EventID = events.EventID 
+                              WHERE events_history.EventID = '{}'
+                              AND Date = '{}'
+                              AND RoomInfo = '{}'
+                              AND Participants = '{}'
+                              AND TicketPrice = '{}'""".format(eventID,formatted_date,eventRoom,eventParticipants,eventTicketPrice))
             #fetch the results and store them
-            eventDetails = cursor.fetchall()
+            try:
+                eventDetails = cursor.fetchall()
+                print(eventDetails)
+            except IndexError:
+                print("The event you are trying to delete does not exist in the event list ")
+                connection.close()
+                break
             try:
                 headers = ("Event name","Date","Room info","Participants","Ticket price","Total donations")
                 #stores the user inputs in an array that will be used to compare the results of the select statement
-                fields_to_check = [eventName, eventDate, eventRoom, eventParticipants, eventTicketPrice]
+                fields_to_check = [eventID, formatted_date, eventRoom, eventParticipants, eventTicketPrice]
                 
                 # checks if all the results in eventDetails match the values in field_to_check all at once
-                if all(eventDetails [0][i] == fields_to_check[i] for i in range (5)):
+                if all(eventDetails [0][i] == fields_to_check[i] for i in range (0-5)):
 
                     #prints the record that is going to be deleted and asks for a confirmation from the user before proceeding
                     print(tabulate(eventDetails,headers=headers))
-                    confirmation = input("Is this the record you want to delete? y/n:")
-                    if confirmation.lower() == "y":
-                        cursor.execute ( """delete from events_history
-                            where EventName  = '{}' 
-                            and Date = '{}'
-                            and RoomInfo ='{}'
-                            and Participants ='{}'
-                            and TicketPrice = '{}' """.format(eventName,eventDate,eventRoom,eventParticipants,eventTicketPrice))
-                    else:
-                        print("Cant find any event instance with the details given, make sure write correctly the details")
+                    while True:
+                        confirmation = input("Is this the record you want to delete? y/n:")
+                        if confirmation.lower() == "y":
+                            cursor.execute ( """delete from events_history
+                                where EventID  = '{}' 
+                                and Date = '{}'
+                                and RoomInfo ='{}'
+                                and Participants ='{}'
+                                and TicketPrice = '{}' """.format(eventID,formatted_date,eventRoom,eventParticipants,eventTicketPrice))
+                            break
+                        elif confirmation.lower() == "n" :
+                            print("Ok")
+                            break
+                        else:
+                            print("Reply with y or n")
+                else:
+                    print("Cant find any event instance with the details given, make sure write correctly the details")
 
             except IndexError:
                 print("Cant find any event instance with the details given, make sure write correctly the details")
