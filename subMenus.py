@@ -138,7 +138,7 @@ def viewOptions():
         try:
             UserInput = int(input("Choose an option: "))
             if UserInput == 0:
-                print("Going back to main menu")
+                print("Going back to main menu\n")
                 break
             
             if UserInput == 1:

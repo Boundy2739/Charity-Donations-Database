@@ -9,10 +9,10 @@ def Menu():
 
     while True:
 
-        print("Insert 1 if you want to add a new record")
-        print("Insert 2 if you want to edit an existing record")
-        print("Insert 3 if you want to delete a record")
-        print("Insert 4 if you want to view or search record")
+        print("Insert 1 to add a new record")
+        print("Insert 2 to edit an existing record")
+        print("Insert 3 to delete a record")
+        print("Insert 4 to view or search record")
         print("Insert 5 to create the tables if you dont have them")
         print("Insert 0 to close the program")
 
