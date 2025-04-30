@@ -193,7 +193,6 @@ def deleteEventHistory(eventID = None,formatted_date = None, eventRoom = None,ev
             #fetch the results and store them
             try:
                 eventDetails = cursor.fetchall()
-                print(eventDetails)
             except IndexError:
                 print("The event you are trying to delete does not exist in the event list ")
                 connection.close()

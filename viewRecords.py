@@ -71,7 +71,7 @@ def searchOptions():
                         searchPrompt = int(input("Insert the ID of the donators: "))
                         #adds IDs tp the list
                         IDs.append(searchPrompt)
-                        print(IDs)
+                       
                         stop = input("Do you want to insert more IDs to search? y/n: ")
                         if stop.upper() == "N":
                             insertIDs = 0
@@ -79,7 +79,7 @@ def searchOptions():
                             print("ok")
                         else:
                             print("reply with y or n\n")
-                        print(IDs)
+                    
                         
                     
                     except ValueError:
@@ -147,7 +147,7 @@ def searchOptions():
                     try:
                         searchPrompt = int(input("Insert the ID of the volunteer: "))
                         IDs.append(searchPrompt) 
-                        print(IDs)
+                        
                         stop = input("Do you want to add more IDs? y/n: ")
                         if stop.upper() == "N":
                             insertIDs = 0
@@ -155,7 +155,7 @@ def searchOptions():
                             print("ok")
                         else:
                             print("reply with y or n\n")
-                        print(IDs)
+                        
                         
                     
                     except ValueError:
